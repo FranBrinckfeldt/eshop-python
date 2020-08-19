@@ -2,6 +2,7 @@
 
 from config.database import get_connection
 from models.CategorySchema import CategorySchema
+from flask import abort
 
 category_schema = CategorySchema()
 categories_schema = CategorySchema(many=True)
@@ -30,25 +31,34 @@ def get_category_by_id(id):
     connection = get_connection()
     cursor = connection.cursor()
     cursor.execute('SELECT id, name, description, created_at, updated_at FROM categories WHERE id = %s', (id,))
-    category = cursor.fetchone()
+    item = cursor.fetchone()
     cursor.close()
     connection.close()
-    return category
+    category = dict(
+                id=item[0],
+                name=item[1],
+                description=item[2],
+                created_at=item[3],
+                updated_at=item[4]
+            )
+    return category_schema.dump(category)
 
-def insert_category(name, description):
+def insert_category(category):
     try:
         connection = get_connection()
         cursor = connection.cursor(prepared=True)
         stmt = 'INSERT INTO categories (name, description) VALUES (%s, %s)'
-        cursor.execute(stmt, (name, description))
+        cursor.execute(stmt, (category['name'], category['description']))
         connection.commit()
+        category['id'] = cursor.lastrowid
+        response = {'message' : 'INSERTED', 'record' : category}, 201
         cursor.close()
         connection.close()
-        return True
+        return response
     except: 
         cursor.close()
         connection.close()
-        return False
+        abort(500)
 
 def delete_category(id):
     try:
@@ -57,27 +67,28 @@ def delete_category(id):
         stmt = 'DELETE FROM categories WHERE id = %s'
         cursor.execute(stmt, (id,))
         connection.commit()
-        row_count = cursor.rowcount
+        response = {'message' : 'DELETED', 'id' : id}, 200
         cursor.close()
         connection.close()
-        return row_count > 0
+        return response
     except: 
         cursor.close()
         connection.close()
-        return False
+        abort(500)
 
-def update_category(id, name, description):
+def update_category(category, id):
     try:
         connection = get_connection()
         cursor = connection.cursor(prepared=True)
         stmt = 'UPDATE categories SET updated_at = CURRENT_TIMESTAMP, name = %s, description = %s  WHERE id = %s'
-        cursor.execute(stmt, (name, description, id))
+        cursor.execute(stmt, (category['name'], category['description'], id))
         connection.commit()
         row_count = cursor.rowcount
+        response = {'message' : 'UPDATED', 'rowAffected' : row_count}, 200
         cursor.close()
         connection.close()
-        return row_count > 0
+        return response
     except: 
         cursor.close()
         connection.close()
-        return False
+        abort(500)

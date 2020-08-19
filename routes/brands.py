@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from models.BrandSchema import BrandSchema
 from controller.brands import get_brand_by_id, get_all_brands, insert_brand, delete_brand, update_brand
 
@@ -10,10 +10,25 @@ def get_brands():
 
 @brands_blueprint.route('/<int:id>', methods=['GET'])
 def get_brand(id):
-    return get_brand_by_id(id)
+    brand = get_brand_by_id(id)
+    if brand is None:
+        abort(404)
+    return brand
 
 @brands_blueprint.route('/', methods=['POST'])
 def post_brand():
+    brand = request.get_json()
+    return insert_brand(brand)
+
+@brands_blueprint.route('/<int:id>', methods=['PUT'])
+def put_brand(id):
+    brand = get_brand_by_id(id)
+    if brand is None:
+        abort(404)
     data = request.get_json()
-    brand = BrandSchema()
-    return brand.dump(data)
+    brand.update(data)
+    return update_brand(brand, id)
+
+@brands_blueprint.route('/<int:id>', methods=['DELETE'])
+def remove_brand(id):
+    return delete_brand(id)

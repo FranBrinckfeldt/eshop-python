@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from models.ProductSchema import ProductSchema
 from controller.products import get_product_by_id, get_all_products, insert_product, delete_product, update_product
 
@@ -10,10 +10,25 @@ def get_products():
 
 @products_blueprint.route('/<int:id>', methods=['GET'])
 def get_product(id):
-    return get_product_by_id(id)
+    product = get_product_by_id(id)
+    if product is None:
+        abort(404)
+    return product
 
 @products_blueprint.route('/', methods=['POST'])
 def post_product():
+    product = request.get_json()
+    return insert_product(product)
+
+@products_blueprint.route('/<int:id>', methods=['PUT'])
+def put_product(id):
+    product = get_product_by_id(id)
+    if product is None:
+        abort(404)
     data = request.get_json()
-    product = ProductSchema()
-    return product.dump(data)
+    product.update(data)
+    return update_product(product, id)
+
+@products_blueprint.route('/<int:id>', methods=['DELETE'])
+def remove_product(id):
+    return delete_product(id)
