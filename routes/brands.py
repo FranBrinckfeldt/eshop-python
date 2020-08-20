@@ -1,3 +1,5 @@
+#TODO: Error Handling
+
 from flask import Blueprint, jsonify, request, abort
 from models.BrandSchema import BrandSchema
 from controller.brands import get_brand_by_id, get_all_brands, insert_brand, delete_brand, update_brand

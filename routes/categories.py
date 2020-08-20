@@ -1,3 +1,5 @@
+#TODO: Error Handling
+
 from flask import Blueprint, jsonify, request, abort
 from models.CategorySchema import CategorySchema
 from controller.categories import get_category_by_id, get_all_categories, insert_category, delete_category, update_category

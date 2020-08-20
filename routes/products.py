@@ -18,6 +18,10 @@ def get_product(id):
 @products_blueprint.route('/', methods=['POST'])
 def post_product():
     product = request.get_json()
+    try:
+        ProductSchema().load(product)
+    except:
+        abort(400)
     return insert_product(product)
 
 @products_blueprint.route('/<int:id>', methods=['PUT'])
@@ -26,6 +30,10 @@ def put_product(id):
     if product is None:
         abort(404)
     data = request.get_json()
+    try:
+        ProductSchema().load(data)
+    except:
+        abort(400)
     product.update(data)
     return update_product(product, id)
 
