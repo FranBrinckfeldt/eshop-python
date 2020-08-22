@@ -1,4 +1,5 @@
 #TODO: Error Handling
+#TODO: Authentication
 
 from flask import Blueprint, jsonify, request, abort
 from models.BrandSchema import BrandSchema

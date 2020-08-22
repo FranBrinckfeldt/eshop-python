@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, jsonify, request, abort, g
 from models.ProductSchema import ProductSchema
 from controller.products import get_product_by_id, get_all_products, insert_product, delete_product, update_product
+from middlewares import is_auth
 
 products_blueprint = Blueprint('products_blueprint', __name__)
 
@@ -16,6 +17,7 @@ def get_product(id):
     return product
 
 @products_blueprint.route('/', methods=['POST'])
+@is_auth
 def post_product():
     product = request.get_json()
     try:
@@ -25,6 +27,7 @@ def post_product():
     return insert_product(product)
 
 @products_blueprint.route('/<int:id>', methods=['PUT'])
+@is_auth
 def put_product(id):
     product = get_product_by_id(id)
     if product is None:
@@ -38,5 +41,6 @@ def put_product(id):
     return update_product(product, id)
 
 @products_blueprint.route('/<int:id>', methods=['DELETE'])
+@is_auth
 def remove_product(id):
     return delete_product(id)
