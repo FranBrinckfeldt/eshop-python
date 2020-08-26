@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, abort
-from models.CustomerSchema import CustomerSchema
-from controller.customers import customer_register, customer_login
+from ..models import CustomerSchema
+from ..controller import customer_register, customer_login
 
 customers_blueprint = Blueprint('customers_blueprint', __name__)
 

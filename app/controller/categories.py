@@ -1,8 +1,8 @@
 #TODO: Error Handling
 
-from config.database import get_connection
-from models.CategorySchema import CategorySchema
 from flask import abort
+from ..config import get_connection
+from ..models import CategorySchema
 
 category_schema = CategorySchema()
 categories_schema = CategorySchema(many=True)

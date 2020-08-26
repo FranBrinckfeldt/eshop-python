@@ -1,9 +1,9 @@
-from config.database import get_connection
-from models.CustomerSchema import CustomerSchema
 from flask import abort
 import mysql.connector
 import bcrypt
-from utils import generate_token
+from ..config import get_connection
+from ..models import CustomerSchema
+from ..utils import generate_token
 
 def customer_register(customer):
     try:

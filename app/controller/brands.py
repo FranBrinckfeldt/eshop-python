@@ -1,8 +1,8 @@
 #TODO: Error Handling
 
-from config.database import get_connection
-from models.BrandSchema import BrandSchema
 from flask import abort
+from ..config import get_connection
+from ..models import BrandSchema
 
 brand_schema = BrandSchema()
 brands_schema = BrandSchema(many=True)
