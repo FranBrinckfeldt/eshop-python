@@ -10,24 +10,25 @@ def get_all_products():
     try:
         connection = get_connection()
         cursor = connection.cursor()
-        cursor.execute('SELECT id, name, description, price, id_category, id_brand, created_at, updated_at FROM products')
+        cursor.execute('SELECT p.id, p.name, p.description, p.price, p.id_category, c.name, c.description, p.id_brand, b.name, b.description, p.created_at, p.updated_at FROM products p LEFT JOIN brands b ON p.id_brand = b.id LEFT JOIN categories c ON p.id_category = c.id')
         rows = cursor.fetchall()
         cursor.close()
         connection.close()
         products = []
         for item in rows:
-            products.append(
-                dict(
-                    id=item[0],
-                    name=item[1],
-                    description=item[2],
-                    price=item[3],
-                    id_category=item[4],
-                    id_brand=item[5],
-                    created_at=item[6],
-                    updated_at=item[7]
-                )
+            category = dict(id=item[4], name=item[5], description=item[6])
+            brand = dict(id=item[7], name=item[8], description=item[9])
+            product = dict(
+                id=item[0],
+                name=item[1],
+                description=item[2],
+                price=item[3],
+                created_at=item[10],
+                updated_at=item[11],
+                category=category,
+                brand=brand
             )
+            products.append(product)
         return products_schema.dump(products)
     except:
         cursor.close()
@@ -38,20 +39,22 @@ def get_product_by_id(id):
     try:
         connection = get_connection()
         cursor = connection.cursor()
-        cursor.execute('SELECT id, name, description, price, id_category, id_brand, created_at, updated_at FROM products WHERE id = %s', (id,))
+        cursor.execute('SELECT p.id, p.name, p.description, p.price, p.id_category, c.name, c.description, p.id_brand, b.name, b.description, p.created_at, p.updated_at FROM products p LEFT JOIN brands b ON p.id_brand = b.id LEFT JOIN categories c ON p.id_category = c.id WHERE p.id = %s', (id,))
         item = cursor.fetchone()
         cursor.close()
         connection.close()
+        category = dict(id=item[4], name=item[5], description=item[6])
+        brand = dict(id=item[7], name=item[8], description=item[9])
         product = dict(
-                    id=item[0],
-                    name=item[1],
-                    description=item[2],
-                    price=item[3],
-                    id_category=item[4],
-                    id_brand=item[5],
-                    created_at=item[6],
-                    updated_at=item[7]
-                )
+            id=item[0],
+            name=item[1],
+            description=item[2],
+            price=item[3],
+            created_at=item[10],
+            updated_at=item[11],
+            category=category,
+            brand=brand
+        )
         return product_schema.dump(product)
     except:
         cursor.close()
@@ -64,7 +67,7 @@ def insert_product(product):
         connection = get_connection()
         cursor = connection.cursor(prepared=True)
         stmt = 'INSERT INTO products (name, description, price, id_category, id_brand) VALUES (%s, %s, %s, %s, %s)'
-        cursor.execute(stmt, (product["name"], product["description"], product["price"], product["id_category"], product["id_brand"]))
+        cursor.execute(stmt, (product['name'], product.get('description'), product['price'], product['category']['id'], product['brand']['id']))
         connection.commit()
         product['id'] = cursor.lastrowid
         response = {'message' : 'INSERTED', 'record' : product}, 201
@@ -109,7 +112,7 @@ def update_product(product, id):
         connection = get_connection()
         cursor = connection.cursor(prepared=True)
         stmt = 'UPDATE products SET updated_at = CURRENT_TIMESTAMP, name = %s, description = %s, price = %s, id_category = %s, id_brand = %s WHERE id = %s'
-        cursor.execute(stmt, (product['name'], product['description'], product['price'], product['id_category'], product['id_brand'], id))
+        cursor.execute(stmt, (product['name'], product.get('description'), product['price'], product['category']['id'], product['brand']['id'], id))
         connection.commit()
         row_count = cursor.rowcount
         response = {'message' : 'UPDATED', 'rowAffected' : row_count}, 200
@@ -124,7 +127,8 @@ def update_product(product, id):
             abort(400)
         else: 
             abort(500)
-    except: 
+    except Exception as err: 
+        print(err)
         cursor.close()
         connection.close()
         abort(500)

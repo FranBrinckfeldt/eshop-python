@@ -1,11 +1,12 @@
 from marshmallow import Schema, fields
+from . import CategorySchema, BrandSchema
 
 class ProductSchema(Schema):
     id = fields.Integer()
     name = fields.Str() 
-    description = fields.Str()
+    description = fields.Str(allow_none=True)
     price = fields.Number()
-    id_category = fields.Integer()
-    id_brand = fields.Integer()
+    category = fields.Nested(CategorySchema())
+    brand = fields.Nested(BrandSchema())
     created_at = fields.DateTime()
     updated_at = fields.DateTime()

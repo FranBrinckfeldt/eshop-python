@@ -35,7 +35,7 @@ def put_product(id):
     data = request.get_json()
     try:
         ProductSchema().load(data)
-    except:
+    except Exception:
         abort(400)
     product.update(data)
     return update_product(product, id)
